@@ -15,11 +15,14 @@ export const getActiveJobs = async (offset :number, limit :number) => {
     const jobsWithDetails = await Promise.all(jobs.map(async (job : any) => {
         const jobIpfsData = await getIPFSData(job.jobDetailsIPFS)
 
+        console.log(job)
+
         return {
           ...job,
-          id: String(job.id),
-          payment: String(job.payment),
-          deadline: String(job.deadline),
+          id: Number(job.id),
+          payment: Number(job.payment),
+          deadline: Number(job.deadline),
+          applicantCount: Number(job.applicantCount),
           jobDetails: jobIpfsData
         }
     }))
