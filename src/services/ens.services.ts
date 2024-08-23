@@ -4,12 +4,12 @@ import {
   ENS_ADDRESS_RESOLVER,
   ENS_ABI,
 } from "../config/Contracts";
-import ViemClient from "../config/ViewClient";
+import EnsClient from "../config/EnsClient";
 
 export const getENS = async (ensName: string): Promise<Address | null> => {
   try {
     // Resolve ENS name to Ethereum address
-    const address = await ViemClient.getEnsAddress({
+    const address = await EnsClient.getEnsAddress({
       name: ensName,
     });
 
