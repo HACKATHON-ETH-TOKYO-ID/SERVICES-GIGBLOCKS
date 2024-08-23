@@ -47,6 +47,7 @@ export const getClientJobs = async (wallet:string, offset :number, limit :number
           id: Number(job.id),
           payment: Number(job.payment),
           deadline: Number(job.deadline),
+          applicantCount: Number(job.applicantCount),
           jobDetails: jobIpfsData
         }
     }))
@@ -71,6 +72,7 @@ export const getFreelancerJobs = async (wallet:string, offset :number, limit :nu
           id: Number(job.id),
           payment: Number(job.payment),
           deadline: Number(job.deadline),
+          applicantCount: Number(job.applicantCount),
           jobDetails: jobIpfsData
         }
     }))
@@ -94,6 +96,7 @@ export const getJobById = async (jobId: number ) => {
        id: Number(job.id),
        payment: Number(job.payment),
        deadline: Number(job.deadline),
+       applicantCount: Number(job.applicantCount),
        jobDetails: jobIpfsData
     }
 

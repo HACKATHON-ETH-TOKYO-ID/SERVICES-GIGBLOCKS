@@ -5,6 +5,7 @@ import jobs from './jobs.route'
 import profiles from './profiles.route'
 import ens from './ens.route'
 import files from './files.route'
+import auth from './auth.route'
 
 export const routes = (app: Hono) => {
     app.use('*', logger())
@@ -13,4 +14,5 @@ export const routes = (app: Hono) => {
     app.route('/profiles', profiles)
     app.route('/ens', ens)
     app.route('/files', files)
+    app.route('/auth', auth)
 }
