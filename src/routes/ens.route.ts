@@ -50,8 +50,13 @@ ens.post("/createSubEns", validateApiKey(API_KEY), async (c) => {
       400
     );
   }
-  let ensData = await createSubEns(subdomain, givenSubdomainAddress);
-  return c.json({ success: true, ens: ensData });
+  try {
+    let ensData = await createSubEns(subdomain, givenSubdomainAddress);
+    return c.json({ success: true, ens: ensData });
+  } catch (error) {
+    console.error("Error in createSubEns:", error);
+    return c.json({ success: false, error: (error as Error).message }, 500);
+  }
 });
 
 export default ens;

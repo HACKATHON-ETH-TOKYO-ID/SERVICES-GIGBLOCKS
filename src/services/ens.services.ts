@@ -1,4 +1,11 @@
-import { Address, getAddress, getContract, encodePacked, keccak256 } from "viem";
+import {
+  Address,
+  formatEther,
+  getAddress,
+  getContract,
+  encodePacked,
+  keccak256,
+} from "viem";
 import {
   ENS_REGISTRY_ADDRESS,
   ENS_ADDRESS_RESOLVER,
@@ -33,22 +40,14 @@ export const createSubEns = async (
   parentDomain: string = "gigblocks.eth"
 ) => {
   try {
-    // Resolve parent domain
     const parentAddress = await getENS(parentDomain);
     if (!parentAddress) {
-      throw new Error(`Could not resolve parent domain ${parentDomain}`);
+      throw new Error(`Could not resolve ${parentDomain}`);
     }
-
-    // Check if subdomain already exists
-    const subDomainaddressOwner = await getENS(
-      `${subdomainName}.${parentDomain}`
-    );
+    const subDomainaddressOwner = await getENS(subdomainName);
     if (subDomainaddressOwner) {
-      throw new Error(
-        `Subdomain ${subdomainName}.${parentDomain} already exists`
-      );
+      throw new Error(`Subdomain ${subdomainName} already exists`);
     }
-
     // Get the ENS registry contract
     const registryContract = getContract({
       address: ENS_REGISTRY_ADDRESS,
@@ -59,33 +58,80 @@ export const createSubEns = async (
     // Calculate the namehash of the parent domain
     const parentNamehash = namehash(parentDomain);
 
-    // Calculate the label hash of the subdomain
-    const labelHash = keccak256(encodePacked(["string"], [subdomainName]));
-
-    // Set the subdomain record
-    const tx = await registryContract.write.setSubnodeRecord([
+    const txSubnodeRecordParams = [
       parentNamehash,
-      labelHash,
+      subdomainName,
       givenSubdomainAddress,
       ENS_ADDRESS_RESOLVER,
-      BigInt(0), // TTL, set to 0 for now
-    ]);
+      BigInt(0),
+      0, // Fuses
+      BigInt(0), // Expiry
+    ];
 
-    // Wait for the transaction to be mined
-    const receipt = await EnsClient.waitForTransactionReceipt({
-      hash: tx,
+    const txSubnodeRecord = await createTransactionSubnodeRecord(
+      registryContract,
+      txSubnodeRecordParams
+    );
+
+    const receiptRecord = await waitForTransactionWithRetry(txSubnodeRecord);
+
+    const formatGasData = (receipt: any) => ({
+      gasUsed: receipt.gasUsed.toString(),
+      effectiveGasPrice: formatEther(receipt.effectiveGasPrice),
+      totalGasCost: formatEther(
+        BigInt(receipt.gasUsed) * receipt.effectiveGasPrice
+      ),
     });
 
+    const recordGasData = formatGasData(receiptRecord);
+
     return {
-      transactionHash: receipt.transactionHash,
-      subdomainName: `${subdomainName}.${parentDomain}`,
+      ens: `${subdomainName}.${parentDomain}`,
       owner: givenSubdomainAddress,
+      transactions: {
+        setSubnodeRecord: {
+          hash: txSubnodeRecord,
+          ...recordGasData,
+        },
+      },
     };
   } catch (error) {
     console.error("Error creating subdomain:", error);
     throw error;
   }
 };
+
+const waitForTransactionWithRetry = async (
+  hash: `0x${string}`,
+  maxAttempts = 5,
+  delayMs = 5000
+) => {
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const receipt = await EnsClient.waitForTransactionReceipt({ hash });
+      return receipt;
+    } catch (error) {
+      if (attempt === maxAttempts) throw error;
+      console.log(
+        `Attempt ${attempt} failed. Retrying in ${delayMs / 1000} seconds...`
+      );
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+};
+
+async function createTransactionSubnodeRecord(
+  registryContract: any,
+  txParams: any
+) {
+  try {
+    const tx = await registryContract.write.setSubnodeRecord(txParams);
+    return tx;
+  } catch (error) {
+    console.error("Error creating createTransactionSubnodeRecord:", error);
+    throw error;
+  }
+}
 
 // Helper function to calculate namehash
 function namehash(name: string): string {
@@ -97,7 +143,10 @@ function namehash(name: string): string {
       node = keccak256(
         encodePacked(
           ["bytes32", "bytes32"],
-          [node as `0x${string}`, keccak256(encodePacked(["string"], [labels[i]]))]
+          [
+            node as `0x${string}`,
+            keccak256(encodePacked(["string"], [labels[i]])),
+          ]
         )
       );
     }
