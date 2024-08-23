@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
 import { ZodError } from 'zod'
-// import { routes } from './routes'
 import { logger } from 'hono/logger'
 import { cors } from 'hono/cors';
 import { HTTPException } from 'hono/http-exception'
+import { routes } from './routes';
 
 const app = new Hono()
 
@@ -14,6 +14,9 @@ app.use('*', cors())
 app.get('/', (c) => {
   return c.text('Gigblocks Server Running On Hono!')
 })
+
+routes(app)
+
 
 app.onError((error, c) => {
 
