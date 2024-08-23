@@ -1,4 +1,5 @@
-import { JsonBody, PinataSDK } from "pinata";
+import { FileObject, JsonBody, PinataSDK } from "pinata";
+
 
 if (!process.env.PINATA_JWT) {
     throw new Error("PINATA_JWT environment variable is not set");
@@ -30,6 +31,26 @@ export const uploadJsonIPFS = async (data : JsonBody) => {
         return result
     } catch (error) {
         console.error('Error upload IPFS data:', error)
+        return null
+    }
+}
+
+export const uploadFileIPFS = async (data : FileObject) => {
+    try {
+        const result = await pinataClient.upload.file(data)
+        return result
+    } catch (error) {
+        console.error('Error upload IPFS data:', error)
+        return null
+    }
+}
+
+export const removeIPFS = async (arrayhash : string[]) => {
+    try {
+        const unpin = await pinataClient.unpin(arrayhash)
+        return unpin
+    } catch (error) {
+        console.error('Error Unpin IPFS data:', error)
         return null
     }
 }
