@@ -1,5 +1,5 @@
 import { ContractAddress, GigBlocksAbi } from "../config/Contracts"
-import ViemClient from "../config/ViewClient"
+import ViemClient from "../config/ViemClient"
 import { getIPFSData } from "../helper/pinata"
 
 export const getProfile = async (walletAddress:string) => {
