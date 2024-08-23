@@ -12,6 +12,8 @@ jobs.get('/', async (c) => {
     
     let jobsData = await getActiveJobs(offset, limit);
 
+    console.log(jobsData)
+
     return c.json(jobsData)
 })
 
