@@ -2,6 +2,10 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
+    "jsxImportSource": "hono/jsx",
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "types": ["bun-types"],
+    "typeRoots": ["./node_modules/bun-types", "./node_modules/@types", "./@types"]
   }
 }

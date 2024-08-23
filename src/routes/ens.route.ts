@@ -15,7 +15,7 @@ const validateApiKey =
     await next();
   };
 
-const API_KEY = process.env.API_KEY as string;
+// const API_KEY = process.env.API_KEY as string;
 
 ens.get("/", async (c) => {
   const ensName = c.req.query("ensName")?.toString() || "gigblocks.eth";
