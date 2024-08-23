@@ -1,7 +1,6 @@
 import { z } from 'zod';
 
-  
-  const ProfileIPFSSchema = z.object({
+const ProfileIPFSSchema = z.object({
     username: z.string(),
     email: z.string(),
     description: z.string(),
@@ -15,9 +14,6 @@ import { z } from 'zod';
   });
 
 type ProfileIPFSType = z.infer<typeof ProfileIPFSSchema>;
-
-
-  
 
 
 export { ProfileIPFSSchema, ProfileIPFSType };
