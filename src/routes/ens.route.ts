@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { getENS } from "../services/ens.services";
+import { getENS, createSubEns } from "../services/ens.services";
 
 const ens = new Hono();
 
@@ -15,7 +15,7 @@ const validateApiKey =
     await next();
   };
 
-// const API_KEY = process.env.API_KEY as string;
+const API_KEY = process.env.API_KEY as string;
 
 ens.get("/", async (c) => {
   const ensName = c.req.query("ensName")?.toString() || "gigblocks.eth";
@@ -31,6 +31,27 @@ ens.get("/", async (c) => {
     success: true,
     ensWalletAddress: ensData,
   });
+});
+
+ens.post("/createSubEns", validateApiKey(API_KEY), async (c) => {
+  const body: any = await c.req.json();
+  const subdomain = body.subdomain as string;
+  const givenSubdomainAddress = body.givenSubdomainAddress as `0x${string}`;
+
+  if (!subdomain) {
+    return c.json(
+      { success: false, error: "Subdomain parameter is required" },
+      400
+    );
+  }
+  if (!/^0x[a-fA-F0-9]{40}$/.test(givenSubdomainAddress)) {
+    return c.json(
+      { success: false, error: "Invalid Ethereum address format" },
+      400
+    );
+  }
+  let ensData = await createSubEns(subdomain, givenSubdomainAddress);
+  return c.json({ success: true, ens: ensData });
 });
 
 export default ens;
