@@ -1,4 +1,4 @@
-import { ContractAddress, GigBlocksAbi } from "../config/Contracts"
+import { ContractAddress, GigBlocksAbi } from from "../services/ens.services";
 import ViemClient from "../config/ViewClient"
 import { getIPFSData } from "../helper/pinata"
 
