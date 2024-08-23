@@ -3,10 +3,10 @@ import { getAccessTokenFromCode } from '../services/auth.services';
 
 const auth = new Hono()
 
-auth.post('/github/:code', async (c) => {
-    const code = c.req.param('code')
+auth.post('/github', async (c) => {
+    const body = await c.req.json()
     
-    const githubAccessToken = await getAccessTokenFromCode(code);
+    const githubAccessToken = await getAccessTokenFromCode(body.code);
 
     return c.json(githubAccessToken)
 })

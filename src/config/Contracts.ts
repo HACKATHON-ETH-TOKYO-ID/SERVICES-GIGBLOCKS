@@ -8,7 +8,7 @@ export const GigBlocksAbi = JSON.parse(
 
 export const ENS_ABI = ENS_ABI_JSON
 
-export const ContractAddress = "0xdb1bb147e9a83fea1a7888953109e8d0724f74e3"
+export const ContractAddress = "0x3EE23782609a89797962547d0C00ce7783438597"
 
 export const ENS_REGISTRY_ADDRESS = "0x0635513f179D50A207757E05759CbD106d7dFcE8";
 
