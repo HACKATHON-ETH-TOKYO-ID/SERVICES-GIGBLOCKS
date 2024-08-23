@@ -17,7 +17,20 @@ export const getAccessTokenFromCode = async (code : string) => {
      * GitHub returns data as a string we must parse.
      */
     const parsedData = queryString.parse(data);
-    console.log(parsedData); 
 
-    return parsedData.access_token;
+    if (parsedData.error) throw Error(String(parsedData.error_description))
+
+    return String(parsedData.access_token);
 };
+
+export const getGitHubUserData = async (access_token : string) => {
+    const { data } = await axios({
+      url: 'https://api.github.com/user',
+      method: 'get',
+      headers: {
+        Authorization: `token ${access_token}`,
+      },
+    });
+    console.log(data); // { id, email, name, login, avatar_url }
+    return data;
+  };
