@@ -1,6 +1,7 @@
 
 import ENS_ABI_JSON from './json/ENS_ABI.json'
 import ENS_RESOLVER_ABI_JSON from './json/ENS_RESOLVER_ABI.json'
+import GB_ENS_RESOLVER_ABI_JSON from './json/GB_ENS_RESOLVER_ABI.json'
 
 export const GigBlocksAbi = JSON.parse(
     `
@@ -11,6 +12,8 @@ export const ENS_ABI = ENS_ABI_JSON
 
 export const ENS_RESOLVER_ABI = ENS_RESOLVER_ABI_JSON
 
+export const GB_ENS_RESOLVER_ABI = GB_ENS_RESOLVER_ABI_JSON
+
 export const ContractAddress = "0xcaa94f71984474bF224E6A42b0d789d219CbFC82"
 
 export const GigblocksWalletAddress = "0x67BA06dB6d9c562857BF08AB1220a16DfA455c45"
@@ -18,3 +21,5 @@ export const GigblocksWalletAddress = "0x67BA06dB6d9c562857BF08AB1220a16DfA455c4
 export const ENS_REGISTRY_ADDRESS = "0x0635513f179D50A207757E05759CbD106d7dFcE8";
 
 export const ENS_ADDRESS_RESOLVER = "0x8FADE66B79cC9f707aB26799354482EB93a5B7dD"
+
+export const GB_ENS_CONTRACT_ADDRESS = "0x53150932EE5e5454fFbb88cA2B3Ae6C3E63eeea9"
