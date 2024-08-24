@@ -194,19 +194,6 @@ async function createTransactionSubnodeRecord(
   }
 }
 
-async function readScrollEnsRecord(
-  scrollDevnetContract: any,
-  txParams: any
-) {
-  try {
-    const tx = await scrollDevnetContract.read.setSubnodeRecord(txParams);
-    return tx;
-  } catch (error) {
-    console.error("Error creating createTransactionSubnodeRecord:", error);
-    throw error;
-  }
-}
-
 async function createTransactionSetAddr(
   resolverContract: any,
   txParams: any
@@ -238,28 +225,5 @@ function namehash(name: string): string {
       );
     }
   }
-  return node;
-}
-
-function calculateNamehash(name: string): string {
-  // Normalize the name
-  const normalizedName = name.toLowerCase();
-  
-  // Split the name into its labels
-  const labels = normalizedName.split('.');
-
-  // Start with the namehash of the root node
-  let node = ethers.ZeroHash;
-
-  // Calculate the namehash
-  for (let i = labels.length - 1; i >= 0; i--) {
-      node = ethers.keccak256(
-          ethers.concat([
-              node,
-              ethers.keccak256(ethers.toUtf8Bytes(labels[i]))
-          ])
-      );
-  }
-
   return node;
 }
