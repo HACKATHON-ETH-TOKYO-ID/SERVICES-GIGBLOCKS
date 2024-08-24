@@ -102,6 +102,27 @@ export const getJobById = async (jobId: number ) => {
 
 }
 
+export const getJobApplicants = async (jobId: number, offset :number, limit :number,  ) => {
+    const jobApplicants : any = await ViemClient.readContract({
+        address: ContractAddress as `0x${string}`,
+        abi: GigBlocksAbi,
+        functionName: 'getJobApplicants',
+        args: [BigInt(jobId), offset, limit],
+        
+    })
+
+    let mapApplicants = jobApplicants.map((applicant : any) => {
+        return {
+            ...applicant,
+            bidAmount: Number(applicant.bidAmount),
+            bidTime: Number(applicant.bidTime),
+        }
+    })
+
+    return mapApplicants
+
+}
+
 // export async function fetchAndValidateJobDetail(jobIpfsHash: string): Promise<JobIPFSType> {
 //     const data = await getIPFSData(jobIpfsHash);
 

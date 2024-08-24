@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { getActiveJobs, getClientJobs, getFreelancerJobs, getJobById } from '../services/jobs.services'
+import { getActiveJobs, getClientJobs, getFreelancerJobs, getJobApplicants, getJobById } from '../services/jobs.services'
 import { uploadJsonIPFS } from '../helper/pinata'
 import { zValidator } from '@hono/zod-validator'
 import { JobIPFSSchema, } from '../schema/jobs.schema'
@@ -60,6 +60,17 @@ jobs.post('/uploadIpfs', zValidator('json', JobIPFSSchema), async (c) => {
     const responsePinata = await uploadJsonIPFS(jobDetail);
 
     return c.json(responsePinata)
+})
+
+jobs.get('/applicants/:jobId', async (c) => {
+    const jobId  = c.req.param('jobId')
+    const offset = Number(c.req.query('offset')) || 0
+    const limit = Number(c.req.query('limit')) || 10
+
+    
+    const jobApplicants = await getJobApplicants(Number(jobId), offset, limit);
+
+    return c.json(jobApplicants)
 })
 
 
