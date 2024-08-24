@@ -1,4 +1,4 @@
-import { ContractAddress, GigBlocksAbi, GigBlocksNFTAbi, GigblocksNFTContractAddress } from "../config/Contracts"
+import { ContractAddress, GigBlocksAbi } from "../config/Contracts"
 import ViemClient from "../config/ViemClient"
 import { getIPFSData } from "../helper/pinata"
 
