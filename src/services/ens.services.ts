@@ -10,9 +10,12 @@ import {
   ENS_REGISTRY_ADDRESS,
   ENS_ADDRESS_RESOLVER,
   ENS_ABI,
+  ENS_RESOLVER_ABI,
+  GigblocksWalletAddress,
 } from "../config/Contracts";
 import EnsClient from "../config/EnsClient";
 import EnsWalletClient from "../config/EnsWalletClient";
+import { ethers } from "ethers";
 
 export const getENS = async (ensName: string): Promise<Address | null> => {
   try {
@@ -20,6 +23,10 @@ export const getENS = async (ensName: string): Promise<Address | null> => {
     const address = await EnsClient.getEnsAddress({
       name: ensName,
     });
+
+    const name = namehash(ensName);
+    console.log(`Namehash of ${ensName} is ${name}`);
+    
 
     if (!address) {
       return null;
@@ -55,25 +62,45 @@ export const createSubEns = async (
       client: EnsWalletClient,
     });
 
+    const resolverContract = getContract({
+      address: ENS_ADDRESS_RESOLVER,
+      abi: ENS_RESOLVER_ABI,
+      client: EnsWalletClient,
+    });
+
     // Calculate the namehash of the parent domain
     const parentNamehash = namehash(parentDomain);
 
     const txSubnodeRecordParams = [
       parentNamehash,
       subdomainName,
-      givenSubdomainAddress,
+      GigblocksWalletAddress,
       ENS_ADDRESS_RESOLVER,
       BigInt(0),
       0, // Fuses
       BigInt(0), // Expiry
     ];
 
+    const fullNameHash = namehash(`${subdomainName}.${parentDomain}`);
+
+    const txSetAddrParams = [
+      fullNameHash,
+      givenSubdomainAddress
+    ]
+
     const txSubnodeRecord = await createTransactionSubnodeRecord(
       registryContract,
       txSubnodeRecordParams
     );
 
+    const txSetAddr = await createTransactionSetAddr(
+      resolverContract,
+      txSetAddrParams
+    );
+
     const receiptRecord = await waitForTransactionWithRetry(txSubnodeRecord);
+
+    const receiptSetAddr = await waitForTransactionWithRetry(txSetAddr);
 
     const formatGasData = (receipt: any) => ({
       gasUsed: receipt.gasUsed.toString(),
@@ -82,8 +109,11 @@ export const createSubEns = async (
         BigInt(receipt.gasUsed) * receipt.effectiveGasPrice
       ),
     });
+    
 
     const recordGasData = formatGasData(receiptRecord);
+
+    const setAddrGasData = formatGasData(receiptSetAddr);
 
     return {
       ens: `${subdomainName}.${parentDomain}`,
@@ -92,6 +122,10 @@ export const createSubEns = async (
         setSubnodeRecord: {
           hash: txSubnodeRecord,
           ...recordGasData,
+        },
+        setAddr: {
+          hash: txSetAddr,
+          ...setAddrGasData,
         },
       },
     };
@@ -133,6 +167,19 @@ async function createTransactionSubnodeRecord(
   }
 }
 
+async function createTransactionSetAddr(
+  resolverContract: any,
+  txParams: any
+) {
+  try {
+    const tx = await resolverContract.write.setAddr(txParams);
+    return tx;
+  } catch (error) {
+    console.error("Error creating createTransactionSubnodeRecord:", error);
+    throw error;
+  }
+}
+
 // Helper function to calculate namehash
 function namehash(name: string): string {
   let node =
@@ -151,5 +198,28 @@ function namehash(name: string): string {
       );
     }
   }
+  return node;
+}
+
+function calculateNamehash(name: string): string {
+  // Normalize the name
+  const normalizedName = name.toLowerCase();
+  
+  // Split the name into its labels
+  const labels = normalizedName.split('.');
+
+  // Start with the namehash of the root node
+  let node = ethers.ZeroHash;
+
+  // Calculate the namehash
+  for (let i = labels.length - 1; i >= 0; i--) {
+      node = ethers.keccak256(
+          ethers.concat([
+              node,
+              ethers.keccak256(ethers.toUtf8Bytes(labels[i]))
+          ])
+      );
+  }
+
   return node;
 }
