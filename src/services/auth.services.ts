@@ -1,6 +1,10 @@
 import axios from "axios";
+import { ethers } from "ethers";
 import queryString from 'query-string';
 
+const PRIVATE_KEY = process.env.PRIVATE_KEY as `0x${string}`;
+    
+const wallet = new ethers.Wallet(PRIVATE_KEY);
 
 export const getAccessTokenFromCode = async (code : string) => {
     const { data } = await axios({
@@ -9,7 +13,7 @@ export const getAccessTokenFromCode = async (code : string) => {
       params: {
         client_id: process.env.GITHUB_CLIENT_ID,
         client_secret: process.env.GITHUB_CLIENT_SECRET,
-        redirect_uri: 'http://localhost:3000/profile',
+        redirect_uri: process.env.GITHUB_REDIRECT,
         code,
       },
     });
@@ -23,14 +27,28 @@ export const getAccessTokenFromCode = async (code : string) => {
     return String(parsedData.access_token);
 };
 
-export const getGitHubUserData = async (access_token : string) => {
-    const { data } = await axios({
-      url: 'https://api.github.com/user',
-      method: 'get',
-      headers: {
-        Authorization: `token ${access_token}`,
-      },
-    });
-    console.log(data); // { id, email, name, login, avatar_url }
-    return data;
-  };
+export const getAccessTokenLinkedin = async (code : string) => {
+    const { data } = await axios
+    .post("https://www.linkedin.com/oauth/v2/accessToken", queryString.stringify({
+        grant_type: "authorization_code",
+        code: code,
+        redirect_uri: process.env.LINKEDIN_REDIRECT,
+        client_id: process.env.LINKEDIN_CLIENT_ID,
+        client_secret: process.env.LINKEDIN_CLIENT_SECRET
+    }));
+
+    return String(data.access_token);
+};
+
+export const generateSignature = async (walletAddress : string, platform : string) => {
+    // Create the message hash
+    const messageHash = ethers.solidityPackedKeccak256(
+        ['address', 'string'],
+        [walletAddress, platform]
+    );
+
+    // Sign the message
+    const signature = await wallet.signMessage(ethers.toBeArray(messageHash));
+
+    return {messageHash, signature}
+}

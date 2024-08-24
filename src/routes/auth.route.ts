@@ -1,38 +1,33 @@
 import { Hono } from 'hono'
-import { getAccessTokenFromCode } from '../services/auth.services';
-import {ethers}  from 'ethers';
+import { generateSignature, getAccessTokenFromCode, getAccessTokenLinkedin } from '../services/auth.services';
+
 
 const auth = new Hono()
-const PRIVATE_KEY = process.env.PRIVATE_KEY as `0x${string}`;
-    
-const wallet = new ethers.Wallet(PRIVATE_KEY);
+
 
 auth.post('/github', async (c) => {
     const body = await c.req.json()
-    
     const githubAccessToken : string = await getAccessTokenFromCode(body.code);
 
     if(!githubAccessToken){
         throw Error("Github Access Token Error!")
     }
 
+    const { messageHash, signature } = await generateSignature(body.walletAddress, 'github')
 
-    console.log(githubAccessToken, "ACCESS TOKEN")
-     // Create the message hash
-    const messageHash = ethers.solidityPackedKeccak256(
-        ['address', 'string'],
-        [body.walletAddress, 'github']
-    );
+    return c.json({ messageHash, signature });
+})
 
-    // Create the EthereumSignedMessage
-    const ethSignedMessageHash = ethers.hashMessage(ethers.toBeArray(messageHash));
 
-    // Sign the message
-    const signature = await wallet.signMessage(ethers.toBeArray(messageHash));
+auth.post('/linkedin', async (c) => {
+    const body = await c.req.json()
+    const linkedinAccessToken : string = await getAccessTokenLinkedin(body.code);
 
-    console.log('Message Hash:', messageHash)
+    if(!linkedinAccessToken){
+        throw Error("Github Access Token Error!")
+    }
 
-    console.log('Signature:', signature);
+    const { messageHash, signature } = await generateSignature(body.walletAddress, 'linkedin')
 
     return c.json({ messageHash, signature });
 })
