@@ -12,6 +12,7 @@ if (!process.env.PINATA_GATEWAY) {
 export const pinataClient = new PinataSDK({
     pinataJwt: process.env.PINATA_JWT,
     pinataGateway: process.env.PINATA_GATEWAY,
+    pinataGatewayKey: process.env.PINATA_GATEWAY_KEY
 });
 
 // Helper function to fetch IPFS data
