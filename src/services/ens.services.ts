@@ -53,7 +53,7 @@ export const getENSScroll = async (ensScrollName: string): Promise<Address | nul
       client: ScrollL1SLoadClient,
     });
 
-    const fullName = `${ensScrollName}`;
+    const fullName = `${ensScrollName}.gigblocks.eth`;
 
     const fullNameHash = namehash(fullName);
 
@@ -78,10 +78,6 @@ export const createSubEns = async (
   parentDomain: string = "gigblocks.eth"
 ) => {
   try {
-    const parentAddress = await getENSScroll(parentDomain);
-    if (!parentAddress) {
-      throw new Error(`Could not resolve ${parentDomain}`);
-    }
     const subDomainaddressOwner = await getENSScroll(subdomainName);
     if (subDomainaddressOwner) {
       throw new Error(`Subdomain ${subdomainName} already exists`);
@@ -112,10 +108,11 @@ export const createSubEns = async (
       BigInt(0), // Expiry
     ];
 
-    const fullNameHash = namehash(`${subdomainName}.${parentDomain}`);
+    const fullNameHash = namehash(`${subdomainName}.gigblocks.eth`);
 
     const txSetAddrParams = [
       fullNameHash,
+      '2148018000',
       givenSubdomainAddress
     ]
 
@@ -123,13 +120,12 @@ export const createSubEns = async (
       registryContract,
       txSubnodeRecordParams
     );
+    const receiptRecord = await waitForTransactionWithRetry(txSubnodeRecord);
 
     const txSetAddr = await createTransactionSetAddr(
       resolverContract,
       txSetAddrParams
     );
-
-    const receiptRecord = await waitForTransactionWithRetry(txSubnodeRecord);
 
     const receiptSetAddr = await waitForTransactionWithRetry(txSetAddr);
 
