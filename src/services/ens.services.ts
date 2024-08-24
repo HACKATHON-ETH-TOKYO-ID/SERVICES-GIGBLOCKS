@@ -9,12 +9,15 @@ import {
 import {
   ENS_REGISTRY_ADDRESS,
   ENS_ADDRESS_RESOLVER,
+  GB_ENS_RESOLVER_ABI,
   ENS_ABI,
   ENS_RESOLVER_ABI,
+  GB_ENS_CONTRACT_ADDRESS,
   GigblocksWalletAddress,
 } from "../config/Contracts";
 import EnsClient from "../config/EnsClient";
 import EnsWalletClient from "../config/EnsWalletClient";
+import ScrollL1SLoadClient from "../config/L1SLoadScrollClient";
 import { ethers } from "ethers";
 
 export const getENS = async (ensName: string): Promise<Address | null> => {
@@ -41,17 +44,45 @@ export const getENS = async (ensName: string): Promise<Address | null> => {
   }
 };
 
+export const getENSScroll = async (ensScrollName: string): Promise<Address | null> => {
+  try {
+
+    const scrollDevnetContract = getContract({
+      address: GB_ENS_CONTRACT_ADDRESS,
+      abi: GB_ENS_RESOLVER_ABI,
+      client: ScrollL1SLoadClient,
+    });
+
+    const fullName = `${ensScrollName}`;
+
+    const fullNameHash = namehash(fullName);
+
+    console.log(`Namehash of ${ensScrollName} is ${fullNameHash}`);
+
+    const resolvedAddress: any = await scrollDevnetContract.read.resolveENS([fullNameHash]);
+
+    if (resolvedAddress === '0x0000000000000000000000000000000000000000') {
+      return null;
+    }
+    const dataReturn = getAddress(resolvedAddress);
+    return dataReturn 
+  } catch (error) {
+    console.error("Error resolving ENS name:", error);
+    throw error;
+  }
+};
+
 export const createSubEns = async (
   subdomainName: string,
   givenSubdomainAddress: `0x${string}`,
   parentDomain: string = "gigblocks.eth"
 ) => {
   try {
-    const parentAddress = await getENS(parentDomain);
+    const parentAddress = await getENSScroll(parentDomain);
     if (!parentAddress) {
       throw new Error(`Could not resolve ${parentDomain}`);
     }
-    const subDomainaddressOwner = await getENS(subdomainName);
+    const subDomainaddressOwner = await getENSScroll(subdomainName);
     if (subDomainaddressOwner) {
       throw new Error(`Subdomain ${subdomainName} already exists`);
     }
@@ -160,6 +191,19 @@ async function createTransactionSubnodeRecord(
 ) {
   try {
     const tx = await registryContract.write.setSubnodeRecord(txParams);
+    return tx;
+  } catch (error) {
+    console.error("Error creating createTransactionSubnodeRecord:", error);
+    throw error;
+  }
+}
+
+async function readScrollEnsRecord(
+  scrollDevnetContract: any,
+  txParams: any
+) {
+  try {
+    const tx = await scrollDevnetContract.read.setSubnodeRecord(txParams);
     return tx;
   } catch (error) {
     console.error("Error creating createTransactionSubnodeRecord:", error);

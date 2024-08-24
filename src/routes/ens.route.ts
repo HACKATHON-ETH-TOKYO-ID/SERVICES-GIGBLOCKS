@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { getENS, createSubEns } from "../services/ens.services";
+import { getENS, getENSScroll, createSubEns } from "../services/ens.services";
 
 const ens = new Hono();
 
@@ -30,6 +30,22 @@ ens.get("/", async (c) => {
   return c.json({
     success: true,
     ensWalletAddress: ensData,
+  });
+});
+
+ens.get("/scroll", async (c) => {
+  const ensName = c.req.query("ensScrollName")?.toString() || "gigblocks.eth";
+  let ensData = await getENSScroll(ensName);
+
+  if (!ensData) {
+    return c.json(
+      { success: false, error: "No address found for ENS name" },
+      400
+    );
+  }
+  return c.json({
+    success: true,
+    ensScrollWalletAddress: ensData,
   });
 });
 
